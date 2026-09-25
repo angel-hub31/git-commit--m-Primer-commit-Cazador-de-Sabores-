@@ -183,7 +183,47 @@ export default function FormulariosScreen({ route, navigation }: any) {
 
             </View>
 
-            {/* Fotografía (Movida entre Calificación y Comentarios) */}
+          
+
+            {/* Comentarios */}
+
+            <View style={styles.seccion}>
+
+                <Text style={styles.label}>
+                    Comentarios
+                </Text>
+
+                <View style={[
+                    styles.inputContainer,
+                    styles.comentariosContainer
+                ]}>
+
+                    <Ionicons
+                        name="chatbubble-outline"
+                        size={20}
+                        color="#9A938D"
+                        style={styles.iconoComentario}
+                    />
+
+                    <TextInput
+                        style={[
+                            styles.input,
+                            styles.textArea
+                        ]}
+                        placeholder="Describe tu experiencia..."
+                        placeholderTextColor="#AAA5A0"
+                        multiline
+                        numberOfLines={5}
+                        textAlignVertical="top"
+                        value={comentarios}
+                        onChangeText={setComentarios}
+                    />
+
+                </View>
+
+            </View>
+
+              {/* Fotografía (Movida entre Calificación y Comentarios) */}
 
             <View style={styles.seccion}>
 
@@ -248,44 +288,6 @@ export default function FormulariosScreen({ route, navigation }: any) {
                     )}
 
                 </TouchableOpacity>
-
-            </View>
-
-            {/* Comentarios */}
-
-            <View style={styles.seccion}>
-
-                <Text style={styles.label}>
-                    Comentarios
-                </Text>
-
-                <View style={[
-                    styles.inputContainer,
-                    styles.comentariosContainer
-                ]}>
-
-                    <Ionicons
-                        name="chatbubble-outline"
-                        size={20}
-                        color="#9A938D"
-                        style={styles.iconoComentario}
-                    />
-
-                    <TextInput
-                        style={[
-                            styles.input,
-                            styles.textArea
-                        ]}
-                        placeholder="Describe tu experiencia..."
-                        placeholderTextColor="#AAA5A0"
-                        multiline
-                        numberOfLines={5}
-                        textAlignVertical="top"
-                        value={comentarios}
-                        onChangeText={setComentarios}
-                    />
-
-                </View>
 
             </View>
 
