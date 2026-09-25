@@ -2,88 +2,78 @@ import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import { SQLiteProvider } from 'expo-sqlite';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
-import { useEffect, useState } from 'react';
+import { Suspense } from 'react';
 import { initDatabase } from './src/database/db';
 import ListaScreen from './src/screens/ListaScreen';
 import FormulariosScreen from './src/screens/FormulariosScreen';
 
 const Stack = createNativeStackNavigator();
 
-export default function App() {
-
-  const [dbLista, setDbLista] = useState(false);
-
-  useEffect(() => {
-    const preparaDb = async () => {
-      try {
-        await initDatabase();
-        setDbLista(true);
-      } catch (error) {
-        console.error("Error al inicializar la base de datos", error);
-      }
-    };
-
-    preparaDb();
-  }, []);
-
-  if (!dbLista) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.loaderCircle}>
-          <ActivityIndicator size="large" color="#C69C6D" />
-        </View>
-
-        <Text style={styles.loadingTitle}>
-          Preparando tu experiencia
-        </Text>
-
-        <Text style={styles.loadingText}>
-          Cargando base de datos...
-        </Text>
-      </View>
-    );
-  }
-
+function PantallaCarga() {
   return (
-    <SQLiteProvider databaseName="cazador.db">
-      <NavigationContainer>
-        <Stack.Navigator
-          initialRouteName="ListaScreen"
-          screenOptions={{
-            headerStyle: {
-              backgroundColor: '#263238',
-            },
-            headerTintColor: '#FFFFFF',
-            headerTitleStyle: {
-              fontWeight: '700',
-              fontSize: 19,
-            },
-            headerShadowVisible: false,
-            contentStyle: {
-              backgroundColor: '#F7F5F2',
-            },
-          }}
-        >
+    <View style={styles.container}>
+      <View style={styles.loaderCircle}>
+        <ActivityIndicator size="large" color="#C69C6D" />
+      </View>
 
-          <Stack.Screen
-            name="ListaScreen"
-            component={ListaScreen}
-            options={{
-              title: 'Cazador de sabores',
+      <Text style={styles.loadingTitle}>
+        Preparando tu experiencia
+      </Text>
+
+      <Text style={styles.loadingText}>
+        Cargando base de datos...
+      </Text>
+    </View>
+  );
+}
+
+export default function App() {
+  return (
+    <Suspense fallback={<PantallaCarga />}>
+      <SQLiteProvider
+        databaseName="cazador.db"
+        onInit={initDatabase}
+        useSuspense
+      >
+        <NavigationContainer>
+          <Stack.Navigator
+            initialRouteName="ListaScreen"
+            screenOptions={{
+              headerStyle: {
+                backgroundColor: '#263238',
+              },
+              headerTintColor: '#FFFFFF',
+              headerTitleStyle: {
+                fontWeight: '700',
+                fontSize: 19,
+              },
+              headerShadowVisible: false,
+              contentStyle: {
+                backgroundColor: '#F7F5F2',
+              },
             }}
-          />
+          >
 
-          <Stack.Screen
-            name="FormulariosScreen"
-            component={FormulariosScreen}
-            options={{
-              title: 'Nueva degustación',
-            }}
-          />
+            <Stack.Screen
+              name="ListaScreen"
+              component={ListaScreen}
+              options={{
+                title: 'Cazador de sabores',
+              }}
+            />
 
-        </Stack.Navigator>
-      </NavigationContainer>
-    </SQLiteProvider>
+            <Stack.Screen
+              name="FormulariosScreen"
+              component={FormulariosScreen}
+              options={{
+                title: 'Nueva degustación',
+              }}
+            />
+
+          </Stack.Navigator>
+        </NavigationContainer>
+      </SQLiteProvider>
+    </Suspense>
   );
 }
 

@@ -6,7 +6,8 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function FormulariosScreen({ route, navigation }: any) {
 
-    const db = useSQLiteContext();
+    const db = useSQLiteContext(); // <-- conexión compartida, NO abrimos una nueva
+
     const idEdicion = route.params?.idEdicion;
     const tituloEdicion = route.params?.tituloActual || '';
     const califEdicion = route.params?.calificacionActual?.toString() || '';
@@ -39,7 +40,7 @@ export default function FormulariosScreen({ route, navigation }: any) {
         }
     };
 
- const guardarRegistro = async () => {
+    const guardarRegistro = async () => {
         // Validación estricta de que los campos no estén vacíos
         if (!titulo || !titulo.trim() || !calificacion || !comentarios || !comentarios.trim() || !fotoBase64) {
             Alert.alert('Campos incompletos', 'Completa todos los campos y toma una fotografía.');
@@ -66,7 +67,6 @@ export default function FormulariosScreen({ route, navigation }: any) {
                 // Forzamos explícitamente el ID a número entero puro
                 const idNum = parseInt(String(idEdicion), 10);
 
-                // IMPORTANTE: Separamos la sentencia para garantizar el tipado correcto en Android
                 await db.runAsync(
                     'UPDATE registros SET titulo = ?, calificacion = ?, comentarios = ?, fotoBase64 = ?, fecha = ? WHERE id = ?;',
                     [tituloSeguro, califNum, comentariosSeguro, fotoSeguro, fechaActual, idNum]
