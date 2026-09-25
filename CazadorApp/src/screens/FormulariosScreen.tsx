@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useSQLiteContext } from 'expo-sqlite';
@@ -13,12 +12,13 @@ export default function FormulariosScreen({ route, navigation }: any) {
     const califEdicion = route.params?.calificacionActual?.toString() || '';
     const comenEdicion = route.params?.comentariosActuales || '';
     const fotoEdicion = route.params?.fotoActual || '';
+
     const [titulo, setTitulo] = useState(tituloEdicion);
     const [calificacion, setCalificacion] = useState(califEdicion);
     const [comentarios, setComentarios] = useState(comenEdicion);
     const [fotoBase64, setFotoBase64] = useState(fotoEdicion);
-    const abrirCamara = async () => {
 
+    const abrirCamara = async () => {
         const { status } = await ImagePicker.requestCameraPermissionsAsync();
 
         if (status !== 'granted') {
@@ -26,7 +26,6 @@ export default function FormulariosScreen({ route, navigation }: any) {
         }
 
         const resultado = await ImagePicker.launchCameraAsync({
-
             mediaTypes: ['images'],
             allowsEditing: false,
             aspect: [4, 3],
@@ -35,56 +34,47 @@ export default function FormulariosScreen({ route, navigation }: any) {
         });
 
         if (!resultado.canceled && resultado.assets && resultado.assets[0].base64) {
-
             const base64Uri = `data:image/jpeg;base64,${resultado.assets[0].base64}`;
             setFotoBase64(base64Uri);
         }
     };
 
-    const guardarRegistro = async () => {
-
-        if (!titulo.trim() || !calificacion.trim() || !comentarios.trim() || !fotoBase64) {
-
+ const guardarRegistro = async () => {
+        // Validación estricta de que los campos no estén vacíos
+        if (!titulo || !titulo.trim() || !calificacion || !comentarios || !comentarios.trim() || !fotoBase64) {
             Alert.alert('Campos incompletos', 'Completa todos los campos y toma una fotografía.');
             return;
         }
 
-        const califNum = parseInt(calificacion, 10);
+        // Aseguramos que la calificación se convierta de forma segura a número entero
+        const califNum = parseInt(String(calificacion).trim(), 10);
 
-        if (
-            isNaN(califNum) || califNum < 1 || califNum > 10
-        ) {
-            Alert.alert('Calificación inválida', 'Ingresa un número entero entre 1 y 10.');
+        if (isNaN(califNum) || califNum < 1 || califNum > 5) {
+            Alert.alert('Calificación inválida', 'Ingresa un número entero entre 1 y 5.');
             return;
         }
 
         const fechaActual = new Date().toISOString().split('T')[0];
 
         try {
+            // Limpieza y tipado seguro de variables
+            const tituloSeguro = titulo.trim();
+            const comentariosSeguro = comentarios.trim();
+            const fotoSeguro = fotoBase64;
 
             if (idEdicion) {
+                // Forzamos explícitamente el ID a número entero puro
+                const idNum = parseInt(String(idEdicion), 10);
+
+                // IMPORTANTE: Separamos la sentencia para garantizar el tipado correcto en Android
                 await db.runAsync(
-                    `UPDATE registros SET titulo = ?,calificacion = ?,comentarios = ?,fotoBase64 = ?,fecha = ?WHERE id = ?;`,
-                    [
-                        titulo,
-                        califNum,
-                        comentarios,
-                        fotoBase64,
-                        fechaActual,
-                        idEdicion
-                    ]
+                    'UPDATE registros SET titulo = ?, calificacion = ?, comentarios = ?, fotoBase64 = ?, fecha = ? WHERE id = ?;',
+                    [tituloSeguro, califNum, comentariosSeguro, fotoSeguro, fechaActual, idNum]
                 );
-
             } else {
-
-                await db.runAsync(`INSERT INTO registros (titulo, calificacion, comentarios, fotoBase64, fecha) VALUES (?, ?, ?, ?, ?);`,
-                    [
-                        titulo,
-                        califNum,
-                        comentarios,
-                        fotoBase64,
-                        fechaActual
-                    ]
+                await db.runAsync(
+                    'INSERT INTO registros (titulo, calificacion, comentarios, fotoBase64, fecha) VALUES (?, ?, ?, ?, ?);',
+                    [tituloSeguro, califNum, comentariosSeguro, fotoSeguro, fechaActual]
                 );
             }
 
@@ -100,24 +90,18 @@ export default function FormulariosScreen({ route, navigation }: any) {
             );
 
         } catch (error) {
-
             console.error('Error al guardar el registro:', error);
-
             Alert.alert('Error', 'No se pudo guardar el registro.');
         }
     };
 
     return (
-
         <ScrollView
             contentContainerStyle={styles.container}
             showsVerticalScrollIndicator={false}
         >
-
             {/* Información */}
-
             <View style={styles.seccion}>
-
                 <Text style={styles.seccionTitulo}>
                     Información de la degustación
                 </Text>
@@ -127,13 +111,11 @@ export default function FormulariosScreen({ route, navigation }: any) {
                 </Text>
 
                 <View style={styles.inputContainer}>
-
                     <Ionicons
                         name="restaurant-outline"
                         size={20}
                         color="#9A938D"
                     />
-
                     <TextInput
                         style={styles.input}
                         placeholder="Ej. Ceviche de camarón"
@@ -141,7 +123,6 @@ export default function FormulariosScreen({ route, navigation }: any) {
                         value={titulo}
                         onChangeText={setTitulo}
                     />
-
                 </View>
 
                 <Text style={styles.label}>
@@ -149,13 +130,11 @@ export default function FormulariosScreen({ route, navigation }: any) {
                 </Text>
 
                 <View style={styles.inputContainer}>
-
                     <Ionicons
                         name="star-outline"
                         size={20}
                         color="#C69C6D"
                     />
-
                     <TextInput
                         style={styles.input}
                         placeholder="Del 1 al 5"
@@ -166,29 +145,21 @@ export default function FormulariosScreen({ route, navigation }: any) {
                         onChangeText={setCalificacion}
                     />
 
-                    {calificacion && (
-
+                    {calificacion ? (
                         <Text style={styles.ratingPreview}>
                             {'★'.repeat(
                                 Math.min(
-                                    Number(calificacion),
+                                    Number(calificacion) || 0,
                                     5
                                 )
                             )}
                         </Text>
-
-                    )}
-
+                    ) : null}
                 </View>
-
             </View>
 
-          
-
             {/* Comentarios */}
-
             <View style={styles.seccion}>
-
                 <Text style={styles.label}>
                     Comentarios
                 </Text>
@@ -197,14 +168,12 @@ export default function FormulariosScreen({ route, navigation }: any) {
                     styles.inputContainer,
                     styles.comentariosContainer
                 ]}>
-
                     <Ionicons
                         name="chatbubble-outline"
                         size={20}
                         color="#9A938D"
                         style={styles.iconoComentario}
                     />
-
                     <TextInput
                         style={[
                             styles.input,
@@ -218,15 +187,11 @@ export default function FormulariosScreen({ route, navigation }: any) {
                         value={comentarios}
                         onChangeText={setComentarios}
                     />
-
                 </View>
-
             </View>
 
-              {/* Fotografía (Movida entre Calificación y Comentarios) */}
-
+            {/* Fotografía */}
             <View style={styles.seccion}>
-
                 <Text style={[styles.label, { marginTop: 15 }]}>
                     Fotografía
                 </Text>
@@ -240,113 +205,87 @@ export default function FormulariosScreen({ route, navigation }: any) {
                     activeOpacity={0.85}
                     onPress={abrirCamara}
                 >
-
                     {fotoBase64 ? (
-
                         <Image
                             source={{ uri: fotoBase64 }}
                             style={styles.imagenPrevia}
                         />
-
                     ) : (
-
                         <View style={styles.placeholderFoto}>
-
                             <View style={styles.iconoCamara}>
-
                                 <Ionicons
                                     name="camera-outline"
                                     size={32}
                                     color="#C69C6D"
                                 />
-
                             </View>
-
                             <Text style={styles.textoCamara}>
                                 Tomar fotografía
                             </Text>
-
                             <Text style={styles.textoCamaraSecundario}>
                                 Toca aquí para abrir la cámara
                             </Text>
-
                         </View>
                     )}
 
-                    {fotoBase64 && (
-
+                    {fotoBase64 ? (
                         <View style={styles.indicadorFoto}>
-
                             <Ionicons
                                 name="camera"
                                 size={17}
                                 color="#FFFFFF"
                             />
-
                         </View>
-
-                    )}
-
+                    ) : null}
                 </TouchableOpacity>
-
             </View>
 
             {/* Botón */}
-
             <TouchableOpacity
                 style={styles.btnGuardar}
                 activeOpacity={0.85}
                 onPress={guardarRegistro}
             >
-
                 <Ionicons
                     name="checkmark-circle-outline"
                     size={23}
                     color="#FFFFFF"
                 />
-
                 <Text style={styles.textoBtnGuardar}>
                     {idEdicion
                         ? 'Actualizar degustación'
                         : 'Guardar degustación'}
                 </Text>
-
             </TouchableOpacity>
 
             <Text style={styles.nota}>
                 Tu experiencia quedará guardada en tu dispositivo.
             </Text>
-
         </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
-
     container: {
         padding: 20,
         paddingBottom: 40,
         backgroundColor: '#F7F5F2',
         flexGrow: 1,
     },
-
     seccion: {
         marginTop: 8,
     },
-
     seccionTitulo: {
         fontSize: 18,
         fontWeight: '800',
         color: '#263238',
         marginBottom: 4,
     },
-
     seccionDescripcion: {
         fontSize: 13,
         color: '#817A75',
         marginBottom: 14,
     },
-
     fotoContainer: {
         width: '100%',
         height: 200,
@@ -358,28 +297,20 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         borderWidth: 1,
         borderColor: '#E7E1DC',
-
         shadowColor: '#263238',
-        shadowOffset: {
-            width: 0,
-            height: 3,
-        },
+        shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.06,
         shadowRadius: 8,
-
         elevation: 2,
     },
-
     imagenPrevia: {
         width: '100%',
         height: '100%',
     },
-
     placeholderFoto: {
         justifyContent: 'center',
         alignItems: 'center',
     },
-
     iconoCamara: {
         width: 60,
         height: 60,
@@ -389,19 +320,16 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 8,
     },
-
     textoCamara: {
         fontSize: 15,
         color: '#4B4541',
         fontWeight: '700',
     },
-
     textoCamaraSecundario: {
         marginTop: 3,
         color: '#9A938D',
         fontSize: 11,
     },
-
     indicadorFoto: {
         position: 'absolute',
         right: 12,
@@ -413,7 +341,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-
     label: {
         fontSize: 13,
         fontWeight: '700',
@@ -421,7 +348,6 @@ const styles = StyleSheet.create({
         marginBottom: 7,
         marginTop: 15,
     },
-
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -432,35 +358,29 @@ const styles = StyleSheet.create({
         paddingHorizontal: 13,
         minHeight: 52,
     },
-
     input: {
         flex: 1,
         paddingHorizontal: 10,
         fontSize: 15,
         color: '#263238',
     },
-
     ratingPreview: {
         color: '#C69C6D',
         fontSize: 14,
         letterSpacing: 1,
     },
-
     comentariosContainer: {
         alignItems: 'flex-start',
         minHeight: 120,
         paddingTop: 14,
     },
-
     iconoComentario: {
         marginTop: 2,
     },
-
     textArea: {
         height: 95,
         paddingTop: 0,
     },
-
     btnGuardar: {
         backgroundColor: '#263238',
         flexDirection: 'row',
@@ -469,30 +389,22 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginTop: 28,
-
         shadowColor: '#263238',
-        shadowOffset: {
-            width: 0,
-            height: 5,
-        },
+        shadowOffset: { width: 0, height: 5 },
         shadowOpacity: 0.18,
         shadowRadius: 8,
-
         elevation: 5,
     },
-
     textoBtnGuardar: {
         color: '#FFFFFF',
         fontSize: 15,
         fontWeight: '800',
         marginLeft: 8,
     },
-
     nota: {
         textAlign: 'center',
         color: '#9A938D',
         fontSize: 11,
         marginTop: 12,
     },
-
 });
