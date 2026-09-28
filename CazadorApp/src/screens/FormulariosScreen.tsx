@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useSQLiteContext } from 'expo-sqlite';
@@ -6,13 +6,19 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function FormulariosScreen({ route, navigation }: any) {
 
-    const db = useSQLiteContext(); // <-- conexión compartida, NO abrimos una nueva
+    const db = useSQLiteContext(); 
 
     const idEdicion = route.params?.idEdicion;
     const tituloEdicion = route.params?.tituloActual || '';
     const califEdicion = route.params?.calificacionActual?.toString() || '';
     const comenEdicion = route.params?.comentariosActuales || '';
     const fotoEdicion = route.params?.fotoActual || '';
+
+    useEffect(() => {
+        navigation.setOptions({
+            title: idEdicion ? 'Editando platillo' : 'Nuevo Platillo',
+        });
+    }, [navigation, idEdicion]);
 
     const [titulo, setTitulo] = useState(tituloEdicion);
     const [calificacion, setCalificacion] = useState(califEdicion);
@@ -67,6 +73,8 @@ export default function FormulariosScreen({ route, navigation }: any) {
                 // Forzamos explícitamente el ID a número entero puro
                 const idNum = parseInt(String(idEdicion), 10);
 
+
+
                 await db.runAsync(
                     'UPDATE registros SET titulo = ?, calificacion = ?, comentarios = ?, fotoBase64 = ?, fecha = ? WHERE id = ?;',
                     [tituloSeguro, califNum, comentariosSeguro, fotoSeguro, fechaActual, idNum]
@@ -77,6 +85,8 @@ export default function FormulariosScreen({ route, navigation }: any) {
                     [tituloSeguro, califNum, comentariosSeguro, fotoSeguro, fechaActual]
                 );
             }
+
+
 
             Alert.alert(
                 "Éxito",
@@ -100,11 +110,9 @@ export default function FormulariosScreen({ route, navigation }: any) {
             contentContainerStyle={styles.container}
             showsVerticalScrollIndicator={false}
         >
-            {/* Información */}
-            <View style={styles.seccion}>
-                <Text style={styles.seccionTitulo}>
-                    Información de la degustación
-                </Text>
+            <View >
+                
+
 
                 <Text style={styles.label}>
                     Nombre del plato

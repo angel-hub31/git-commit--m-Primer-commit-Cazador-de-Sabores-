@@ -66,7 +66,7 @@ export default function App() {
               name="FormulariosScreen"
               component={FormulariosScreen}
               options={{
-                title: 'Nueva degustación',
+                title: 'Nuevo Sabor',
               }}
             />
 

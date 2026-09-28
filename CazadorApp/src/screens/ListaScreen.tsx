@@ -115,19 +115,23 @@ export default function ListaScreen({ navigation }: any) {
                     {item.comentarios}
                 </Text>
 
-                <View style={styles.fechaContainer}>
+                <View>
+                    <View>
+                        <Ionicons
+                            name="calendar-outline"
+                            size={13}
+                            color="#b63939"
 
-                    <Ionicons
-                        name="calendar-outline"
-                        size={13}
-                        color="#9A938D"
-                    />
+                        />
 
-                    <Text style={styles.fecha}>
-                        {item.fecha}
-                    </Text>
+                        <Text>
+                            <Text>registrado el:</Text> {item.fecha}
+                        </Text>
+
+                    </View>
 
                 </View>
+
 
             </View>
 
@@ -392,17 +396,6 @@ const styles = StyleSheet.create({
         color: '#6F6A66',
         lineHeight: 17,
         marginBottom: 5,
-    },
-
-    fechaContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-
-    fecha: {
-        fontSize: 10,
-        color: '#9A938D',
-        marginLeft: 4,
     },
 
     accionesContainer: {

@@ -1,8 +1,5 @@
 import { type SQLiteDatabase } from 'expo-sqlite';
 
-// Ya no abrimos la conexión aquí. Esta función solo recibe
-// la conexión que el SQLiteProvider crea y la usa para
-// inicializar la tabla.
 export const initDatabase = async (db: SQLiteDatabase) => {
 
     await db.execAsync(`
